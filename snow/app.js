@@ -134,6 +134,23 @@ function buildScene(renderer) {
   trees.count = caps.count = planted;
   scene.add(trees, caps);
 
+  // Stars to catch: fixed spots down the run, some off the line so you have to steer
+  const STARS = 40;
+  const starD = [];
+  const starO = [];
+  const got = new Uint8Array(STARS);
+  for (let i = 0; i < STARS; i++) {
+    starD.push(START + 30 + (i / STARS) * (END - START - 60));
+    starO.push(Math.round((rand() * 2 - 1) * 4) * 2.5);
+  }
+  const stars = new THREE.InstancedMesh(
+    new THREE.OctahedronGeometry(0.9),
+    new THREE.MeshStandardMaterial({ color: 0xffc83d, emissive: 0xff8a00, emissiveIntensity: 0.6, flatShading: true }),
+    STARS
+  );
+  scene.add(stars);
+  document.getElementById("starsTotal").textContent = STARS;
+
   // Checkpoint gates, one per page section
   const label = (text) => {
     const cv = document.createElement("canvas");
@@ -235,13 +252,66 @@ function buildScene(renderer) {
   grad.addColorStop(1, "rgba(255,255,255,0)");
   dg.fillStyle = grad;
   dg.fillRect(0, 0, 32, 32);
+  const dotTex = new THREE.CanvasTexture(dot);
   const flakeGeo = new THREE.BufferGeometry();
   flakeGeo.setAttribute("position", new THREE.BufferAttribute(flakePos, 3));
   const flakes = new THREE.Points(
     flakeGeo,
-    new THREE.PointsMaterial({ map: new THREE.CanvasTexture(dot), size: 0.5, transparent: true, depthWrite: false })
+    new THREE.PointsMaterial({ map: dotTex, size: 0.5, transparent: true, depthWrite: false })
   );
   scene.add(flakes);
+
+  // Snow spray kicked up by the board
+  const SPRAY = reduceMotion ? 0 : 200;
+  const sprayPos = new Float32Array(SPRAY * 3).fill(-1e4);
+  const sprayVel = new Float32Array(SPRAY * 3);
+  const sprayLife = new Float32Array(SPRAY);
+  const sprayGeo = new THREE.BufferGeometry();
+  sprayGeo.setAttribute("position", new THREE.BufferAttribute(sprayPos, 3));
+  const spray = new THREE.Points(sprayGeo, new THREE.PointsMaterial({ map: dotTex, size: 0.7, transparent: true, depthWrite: false }));
+  spray.frustumCulled = false;
+  scene.add(spray);
+  let nextSpray = 0;
+
+  // Steering: arrow keys / A-D on a keyboard, sideways swipe on a phone
+  let input = 0;
+  let steer = 0;
+  let off = 0;
+  const keyDir = { ArrowLeft: -1, ArrowRight: 1, a: -1, d: 1, A: -1, D: 1 };
+  addEventListener("keydown", (e) => {
+    if (!keyDir[e.key] || e.target.closest?.("input, textarea")) return;
+    input = keyDir[e.key];
+    e.preventDefault();
+  });
+  addEventListener("keyup", (e) => {
+    if (keyDir[e.key] === input) input = 0;
+  });
+  let touchX = 0;
+  addEventListener("touchstart", (e) => (touchX = e.touches[0].clientX), { passive: true });
+  addEventListener(
+    "touchmove",
+    (e) => {
+      const x = e.touches[0].clientX;
+      steer += (x - touchX) * 0.06;
+      touchX = x;
+    },
+    { passive: true }
+  );
+
+  let score = 0;
+  const scoreEl = document.getElementById("stars");
+  const scoreBox = scoreEl.parentElement;
+  const haul = document.getElementById("haul");
+  const catchStar = () => {
+    score++;
+    scoreEl.textContent = score;
+    scoreBox.classList.remove("pop");
+    void scoreBox.offsetWidth; // restart the pop animation
+    scoreBox.classList.add("pop");
+    haul.hidden = false;
+    haul.textContent =
+      score === STARS ? `Perfect run: all ${STARS} stars caught!` : `Your run: ${score} of ${STARS} stars caught.`;
+  };
 
   // Scroll position -> distance down the run. Gates sit where their section is centered.
   let stopT = [];
@@ -270,8 +340,8 @@ function buildScene(renderer) {
   document.fonts?.ready.then(placeGates);
 
   const altEl = document.getElementById("alt");
-  const point = (d, out) => {
-    const x = pathX(d);
+  const point = (d, out, o = 0) => {
+    const x = pathX(d) + o;
     return out.set(x, height(x, d), -d);
   };
   const here = new THREE.Vector3();
@@ -281,6 +351,7 @@ function buildScene(renderer) {
   const lookTarget = new THREE.Vector3();
   let t = scrollY / maxScroll();
   let first = true;
+  let prevD = distAt(t);
   const clock = new THREE.Clock();
 
   renderer.setAnimationLoop(() => {
@@ -289,23 +360,66 @@ function buildScene(renderer) {
     t = reduceMotion ? target : t + (target - t) * Math.min(1, dt * 3.5);
     const d = distAt(t);
 
-    point(d, here);
-    point(d + 3, ahead);
+    steer = THREE.MathUtils.clamp(steer + input * dt * 24, -11, 11);
+    const carve = steer - off;
+    off += carve * Math.min(1, dt * 6);
+
+    point(d, here, off);
+    point(d + 3, ahead, off);
     rider.position.copy(here);
     rider.lookAt(ahead.x, here.y, ahead.z);
-    // Lean into the turn: curvature of the path
+    // Lean into the turn: curvature of the path plus the player's own carve
     const curve = pathX(d + 4) - 2 * pathX(d) + pathX(d - 4);
     const speed = Math.abs(target - t) * 60;
-    rider.rotateZ(THREE.MathUtils.clamp(-curve * 0.9, -0.5, 0.5));
+    rider.rotateZ(THREE.MathUtils.clamp(-curve * 0.9 - carve * 0.08, -0.6, 0.6));
     rider.rotateX(-Math.atan(SLOPE) * 0.8);
     shadow.position.set(here.x, here.y + 0.05, here.z);
+
+    // Stars: spin, bob, and get caught when the rider passes close enough
+    const lo = Math.min(prevD, d) - 1;
+    const hi = Math.max(prevD, d) + 1;
+    for (let i = 0; i < STARS; i++) {
+      if (!got[i] && starD[i] > lo && starD[i] < hi && Math.abs(starO[i] - off) < 2.6) {
+        got[i] = 1;
+        catchStar();
+      }
+      point(starD[i], m.position, starO[i]);
+      m.position.y += 1.8 + (reduceMotion ? 0 : Math.sin(clock.elapsedTime * 3 + i) * 0.3);
+      m.rotation.set(0, reduceMotion ? 0 : clock.elapsedTime * 2 + i, 0);
+      m.scale.setScalar(got[i] ? 0 : 1);
+      m.updateMatrix();
+      stars.setMatrixAt(i, m.matrix);
+    }
+    stars.instanceMatrix.needsUpdate = true;
+    prevD = d;
+
+    if (SPRAY) {
+      const emit = Math.min(8, Math.floor(speed * 3 + Math.abs(carve) * 0.8));
+      for (let k = 0; k < emit; k++) {
+        const i = nextSpray++ % SPRAY;
+        sprayPos.set([here.x + (Math.random() - 0.5) * 1.2, here.y + 0.2, here.z + 1.2], i * 3);
+        sprayVel.set([(Math.random() - 0.5) * 4 - carve * 0.4, 2 + Math.random() * 3, 3 + Math.random() * 3], i * 3);
+        sprayLife[i] = 0.7;
+      }
+      for (let i = 0; i < SPRAY; i++) {
+        if (sprayLife[i] <= 0) continue;
+        sprayLife[i] -= dt;
+        if (sprayLife[i] <= 0) {
+          sprayPos[i * 3 + 1] = -1e4;
+          continue;
+        }
+        sprayVel[i * 3 + 1] -= 9.8 * dt;
+        for (let a = 0; a < 3; a++) sprayPos[i * 3 + a] += sprayVel[i * 3 + a] * dt;
+      }
+      sprayGeo.attributes.position.needsUpdate = true;
+    }
 
     // Camera rides behind and above the rider; on phones a bit higher so cards don't hide the rider
     const back = camera.aspect < 0.8 ? 15 : 13;
     const up = camera.aspect < 0.8 ? 9 : 6.5;
-    point(d - back, camTarget);
+    point(d - back, camTarget, off * 0.7);
     camTarget.y += up + Math.min(speed, 3);
-    lookTarget.copy(point(d + 14, look)).lerp(here, 0.55);
+    lookTarget.copy(point(d + 14, look, off * 0.5)).lerp(here, 0.55);
     if (first) {
       camera.position.copy(camTarget);
       first = false;

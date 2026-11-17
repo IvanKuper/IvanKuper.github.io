@@ -74,6 +74,15 @@ a { color: inherit; }
   text-shadow: 0 1px 10px rgba(13, 27, 42, 0.5);
   font-variant-numeric: tabular-nums;
 }
+.score {
+  font: 800 1rem/1 "Bricolage Grotesque", sans-serif;
+  color: #ffd166;
+  text-shadow: 0 1px 10px rgba(13, 27, 42, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+.score.pop { animation: pop 0.35s ease-out; }
+@keyframes pop { 40% { transform: scale(1.4); } }
+.no-webgl .score, .no-webgl .steer { display: none; }
 .rail { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; pointer-events: auto; }
 .rail a {
   display: flex;
