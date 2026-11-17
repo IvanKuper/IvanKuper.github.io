@@ -41,6 +41,7 @@
 
     <aside class="hud" aria-hidden="true">
       <div class="alt"><span id="alt">2400</span> m</div>
+      <div class="score">★ <span id="stars">0</span> / <span id="starsTotal">40</span></div>
       <ol class="rail" id="rail"></ol>
     </aside>
 
@@ -53,7 +54,8 @@
             I'm Ivan. I build web apps end to end: React and TypeScript in the browser, Node.js and
             Express on the server, MongoDB or SQL underneath. Scroll to start the run.
           </p>
-          <p class="hint"><span class="key">↓</span> Scroll, swipe or use the arrow keys</p>
+          <p class="hint"><span class="key">↓</span> Scroll or swipe to ride</p>
+          <p class="hint steer"><span class="key">←</span><span class="key">→</span> Steer (or swipe sideways) and catch the stars</p>
         </div>
       </section>
 
@@ -157,6 +159,7 @@
           <a class="btn" href="mailto:IvanKuper7@gmail.com">IvanKuper7@gmail.com</a>
           <a class="btn ghost" href="https://www.linkedin.com/in/ivankuper/" target="_blank" rel="noopener">LinkedIn</a>
           <a class="btn ghost" href="https://github.com/IvanKuper" target="_blank" rel="noopener">GitHub</a>
+          <p class="small" id="haul" hidden></p>
           <p class="small"><a href="#start" id="again">Ride again ↑</a></p>
         </div>
       </section>
