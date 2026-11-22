@@ -36,7 +36,11 @@ a { color: inherit; }
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 18px clamp(16px, 4vw, 40px);
+  padding: 14px clamp(16px, 4vw, 40px);
+  /* Frosted band so cards scrolling up never sit under the links */
+  background: rgba(13, 27, 42, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .brand {
   font: 800 1.15rem/1 "Bricolage Grotesque", sans-serif;
@@ -225,7 +229,9 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
 @media (max-width: 720px) {
   .links a:not(:last-child) { display: none; }
-  .hud { top: 62px; right: auto; left: 16px; transform: none; justify-items: start; }
+  /* Phones: altitude and stars sit inside the top band, between the name and the link */
+  .hud { top: 22px; right: auto; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; gap: 12px; }
+  .alt, .score { font-size: 0.95rem; }
   .rail { display: none; }
   .stop, .stop:nth-child(even) {
     min-height: 130vh;
