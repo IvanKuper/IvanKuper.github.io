@@ -1,9 +1,9 @@
-import * as THREE from "three";
-
 const stops = [...document.querySelectorAll(".stop")];
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const root = document.documentElement;
+const noWebgl = () => root.classList.add("no-webgl");
 
-// ---- Page UI (works with or without WebGL) ----
+// ---- Page UI (works with or without WebGL, and if the 3D library fails to load) ----
 const rail = document.getElementById("rail");
 for (const s of stops) {
   const li = document.createElement("li");
@@ -24,23 +24,41 @@ const io = new IntersectionObserver(
 stops.forEach((s) => io.observe(s));
 stops[0].querySelector(".card").classList.add("in");
 
-// ---- 3D scene ----
-const canvas = document.getElementById("scene");
-let renderer;
-try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-} catch {
-  document.documentElement.classList.add("no-webgl");
-}
-if (renderer) buildScene(renderer);
+const maxScroll = () => Math.max(1, root.scrollHeight - innerHeight);
+const progress = document.getElementById("progress");
+const onScroll = () => progress.style.setProperty("--p", Math.min(1, scrollY / maxScroll()));
+addEventListener("scroll", onScroll, { passive: true });
+onScroll();
 
-function buildScene(renderer) {
+// ---- 3D scene ----
+import("three")
+  .then((THREE) => {
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("scene"), antialias: true, powerPreference: "high-performance" });
+    } catch {
+      return noWebgl();
+    }
+    return buildScene(THREE, renderer);
+  })
+  .catch(noWebgl);
+
+// Built in small steps with pauses in between, so the page stays responsive on phones while the mountain loads
+const pause = () => new Promise((r) => setTimeout(r));
+
+async function buildScene(THREE, renderer) {
   const RUN = 1400; // length of the run in world units
   const START = 40;
   const END = RUN - 80;
   const SLOPE = 0.32;
-  const SKY = new THREE.Color(0xcfe3f1);
   const ACCENT = 0xff5a36;
+  // Late-afternoon light: deep blue overhead, warm haze on the horizon
+  const ZENITH = new THREE.Color(0x3f78bf);
+  const HORIZON = new THREE.Color(0xfde9dc);
+  const HAZE = new THREE.Color(0xf8efe8);
+
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.3;
 
   // Deterministic random so the mountain looks the same on every visit.
   let seed = 7;
@@ -62,16 +80,40 @@ function buildScene(renderer) {
   };
 
   const scene = new THREE.Scene();
-  scene.background = SKY;
-  scene.fog = new THREE.Fog(SKY, 70, 460);
+  scene.fog = new THREE.Fog(HAZE, 80, 520);
 
-  const camera = new THREE.PerspectiveCamera(55, 1, 0.5, 2000);
-  scene.add(new THREE.HemisphereLight(0xe8f4ff, 0x7f93ad, 1.7));
-  const sun = new THREE.DirectionalLight(0xffe0c2, 2.4);
-  sun.position.set(-1, 1.4, 0.6);
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.5, 3200);
+  scene.add(new THREE.HemisphereLight(0xe3eeff, 0x8b9cc4, 1.7));
+  const sun = new THREE.DirectionalLight(0xffd2a6, 2.8);
+  sun.position.set(-1, 1.1, 0.5);
   scene.add(sun);
 
-  // Terrain
+  // Sky dome with a soft sun glow, follows the camera
+  const sunDir = new THREE.Vector3(-0.5, 0.07, -1).normalize();
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(2800, 32, 16),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+      toneMapped: false,
+      uniforms: { zenith: { value: ZENITH }, horizon: { value: HORIZON }, sunDir: { value: sunDir } },
+      vertexShader: `varying vec3 vDir;
+        void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `uniform vec3 zenith; uniform vec3 horizon; uniform vec3 sunDir; varying vec3 vDir;
+        void main() {
+          float h = clamp(vDir.y, 0.0, 1.0);
+          vec3 col = mix(horizon, zenith, pow(h, 0.42));
+          float s = max(dot(normalize(vDir), sunDir), 0.0);
+          col += vec3(1.0, 0.8, 0.55) * (pow(s, 900.0) * 1.5 + pow(s, 60.0) * 0.22 + pow(s, 8.0) * 0.04);
+          gl_FragColor = vec4(col, 1.0);
+        }`,
+    })
+  );
+  sky.renderOrder = -1;
+  scene.add(sky);
+
+  // Terrain: warm light on slopes facing the sun, cool blue in the shade
   const isSmall = innerWidth < 720;
   const terrainGeo = new THREE.PlaneGeometry(340, RUN + 420, isSmall ? 90 : 150, isSmall ? 520 : 840);
   terrainGeo.rotateX(-Math.PI / 2);
@@ -83,40 +125,77 @@ function buildScene(renderer) {
   }
   terrainGeo.computeVertexNormals();
   const colors = new Float32Array(pos.count * 3);
-  const snow = new THREE.Color(0xffffff);
-  const shade = new THREE.Color(0x9fb8d4);
+  const snow = new THREE.Color(0xfffaf5);
+  const shade = new THREE.Color(0xa3bce3);
   const c = new THREE.Color();
   const normals = terrainGeo.attributes.normal;
   for (let i = 0; i < pos.count; i++) {
-    c.copy(shade).lerp(snow, Math.pow(normals.getY(i), 6));
+    c.copy(shade).lerp(snow, Math.pow(normals.getY(i), 8));
     c.toArray(colors, i * 3);
   }
   terrainGeo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   scene.add(
-    new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.95 }))
+    new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.9 }))
   );
 
-  // Distant peaks: unfogged pale silhouettes
-  const peakMat = new THREE.MeshStandardMaterial({ color: 0xeef4fa, flatShading: true, fog: false });
-  for (let i = 0; i < 14; i++) {
-    const r = 160 + rand() * 220;
-    const peak = new THREE.Mesh(new THREE.ConeGeometry(r, r * (0.8 + rand() * 0.5), 6 + Math.floor(rand() * 3)), peakMat);
-    const side = i % 2 ? 1 : -1;
-    const d = (i / 14) * (RUN + 600) + 200;
-    peak.position.set(side * (420 + rand() * 300), -d * SLOPE - 60, -d - 300);
+  await pause();
+
+  // Distant peaks: rock below, snow on top, faded into the haze like real distance
+  const rock = new THREE.Color(0x6f86ad);
+  const peakSnow = new THREE.Color(0xffffff);
+  const peakMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, fog: false });
+  const addPeak = (x, y, z, r, h, haze) => {
+    const geo = new THREE.ConeGeometry(r, h, 6 + Math.floor(rand() * 4), 4);
+    const p = geo.attributes.position;
+    const pc = new Float32Array(p.count * 3);
+    const line = 0.05 + rand() * 0.25; // snow line, as a share of the height
+    const phase = rand() * 6;
+    for (let k = 0; k < p.count; k++) {
+      const v = p.getY(k) / h + 0.5;
+      // Jagged ridges: the wobble depends only on the angle, so the seam of the cone stays closed
+      const wobble = 1 + 0.14 * Math.sin(Math.atan2(p.getZ(k), p.getX(k)) * 3 + v * 5 + phase);
+      p.setX(k, p.getX(k) * wobble);
+      p.setZ(k, p.getZ(k) * wobble);
+      c.copy(rock).lerp(peakSnow, THREE.MathUtils.smoothstep(v, line, line + 0.25)).lerp(HAZE, haze);
+      c.toArray(pc, k * 3);
+    }
+    geo.setAttribute("color", new THREE.BufferAttribute(pc, 3));
+    geo.computeVertexNormals();
+    const peak = new THREE.Mesh(geo, peakMat);
+    peak.position.set(x, y + h / 2 - 40, z);
     peak.rotation.y = rand() * Math.PI;
     scene.add(peak);
+  };
+  // Along both sides of the valley
+  for (let i = 0; i < 16; i++) {
+    const r = 160 + rand() * 220;
+    const d = (i / 16) * (RUN + 600) + 200;
+    addPeak((i % 2 ? 1 : -1) * (420 + rand() * 300), -d * SLOPE - 60, -d - 300, r, r * (0.85 + rand() * 0.6), 0.35);
+  }
+  // A big range straight ahead, at the far end of the valley
+  for (let i = 0; i < 8; i++) {
+    const r = 260 + rand() * 200;
+    const d = RUN + 650 + rand() * 450;
+    addPeak(-760 + i * 220 + rand() * 80, -d * SLOPE - 40, -d, r, r * (1.1 + rand() * 0.6), 0.5);
   }
 
   const lodgeD = END + 24;
   const lodgeX = pathX(lodgeD) + 13;
 
-  // Trees with snow caps
+  await pause();
+
+  // Pines: two tiers of branches and a snow cap, each tree a slightly different green
   const TREES = isSmall ? 600 : 1100;
-  const treeGeo = new THREE.ConeGeometry(2.2, 7, 6).translate(0, 3.5, 0);
-  const capGeo = new THREE.ConeGeometry(1.25, 2.6, 6).translate(0, 6.2, 0);
-  const trees = new THREE.InstancedMesh(treeGeo, new THREE.MeshStandardMaterial({ color: 0x2f5d50, flatShading: true }), TREES);
+  const lowGeo = new THREE.ConeGeometry(2.4, 5, 7).translate(0, 3, 0);
+  const highGeo = new THREE.ConeGeometry(1.7, 4, 7).translate(0, 5.6, 0);
+  const capGeo = new THREE.ConeGeometry(1.05, 2.2, 7).translate(0, 6.9, 0);
+  const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.4, 5).translate(0, 0.5, 0);
+  const pine = new THREE.MeshStandardMaterial({ flatShading: true, roughness: 1 });
+  const low = new THREE.InstancedMesh(lowGeo, pine, TREES);
+  const high = new THREE.InstancedMesh(highGeo, pine, TREES);
   const caps = new THREE.InstancedMesh(capGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true }), TREES);
+  const trunks = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5b3d2e, flatShading: true }), TREES);
+  const greens = [0x24574a, 0x2f6a52, 0x1f4a44, 0x3a7556, 0x2a5f58];
   const m = new THREE.Object3D();
   let planted = 0;
   for (let i = 0; i < TREES; i++) {
@@ -126,13 +205,21 @@ function buildScene(renderer) {
     if (Math.hypot(x - lodgeX, d - lodgeD) < 30) continue;
     m.position.set(x, height(x, d) - 0.3, -d);
     m.rotation.y = rand() * Math.PI;
-    m.scale.setScalar(0.7 + rand() * 1);
+    const s = 0.7 + rand();
+    m.scale.set(s, s * (0.9 + rand() * 0.35), s);
     m.updateMatrix();
-    trees.setMatrixAt(planted, m.matrix);
-    caps.setMatrixAt(planted++, m.matrix);
+    c.setHex(greens[Math.floor(rand() * greens.length)]);
+    for (const mesh of [low, high, caps, trunks]) mesh.setMatrixAt(planted, m.matrix);
+    low.setColorAt(planted, c);
+    high.setColorAt(planted, c.offsetHSL(0, 0, 0.04));
+    planted++;
   }
-  trees.count = caps.count = planted;
-  scene.add(trees, caps);
+  for (const mesh of [low, high, caps, trunks]) {
+    mesh.count = planted;
+    scene.add(mesh);
+  }
+
+  await pause();
 
   // Stars to catch: fixed spots down the run, some off the line so you have to steer
   const STARS = 40;
@@ -145,7 +232,7 @@ function buildScene(renderer) {
   }
   const stars = new THREE.InstancedMesh(
     new THREE.OctahedronGeometry(0.9),
-    new THREE.MeshStandardMaterial({ color: 0xffc83d, emissive: 0xff8a00, emissiveIntensity: 0.6, flatShading: true }),
+    new THREE.MeshStandardMaterial({ color: 0xffc83d, emissive: 0xff8a00, emissiveIntensity: 0.7, flatShading: true }),
     STARS
   );
   scene.add(stars);
@@ -159,6 +246,9 @@ function buildScene(renderer) {
     const g = cv.getContext("2d");
     g.fillStyle = "#ff5a36";
     g.fillRect(0, 0, 512, 128);
+    g.fillStyle = "rgba(255,255,255,0.25)";
+    g.fillRect(0, 0, 512, 10);
+    g.fillRect(0, 118, 512, 10);
     g.fillStyle = "#fff";
     g.font = "800 64px 'Bricolage Grotesque', system-ui, sans-serif";
     g.textAlign = "center";
@@ -166,6 +256,7 @@ function buildScene(renderer) {
     g.fillText(text.toUpperCase(), 256, 68);
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
     return tex;
   };
   const poleGeo = new THREE.CylinderGeometry(0.18, 0.18, 7, 8).translate(0, 3.5, 0);
@@ -178,7 +269,7 @@ function buildScene(renderer) {
     right.position.x = 7;
     const banner = new THREE.Mesh(
       new THREE.PlaneGeometry(13, 3.2),
-      new THREE.MeshBasicMaterial({ map: label(i === 0 ? "Start" : s.dataset.label), side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ map: label(i === 0 ? "Start" : s.dataset.label), side: THREE.DoubleSide, toneMapped: false })
     );
     banner.position.y = 5.6;
     gate.add(left, right, banner);
@@ -186,18 +277,25 @@ function buildScene(renderer) {
     return gate;
   });
 
-  // Lodge at the bottom of the run
+  // Lodge at the bottom of the run, with warm windows and a chimney
   const lodge = new THREE.Group();
-  const walls = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 9), new THREE.MeshStandardMaterial({ color: 0x8a5a3b, flatShading: true }));
+  const wood = new THREE.MeshStandardMaterial({ color: 0x8a5a3b, flatShading: true });
+  const walls = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 9), wood);
   walls.position.y = 3;
   const roof = new THREE.Mesh(
     new THREE.CylinderGeometry(0.01, 9, 5, 4, 1).rotateY(Math.PI / 4).scale(1, 1, 0.8),
     new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true })
   );
   roof.position.y = 8.4;
-  const glow = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.2), new THREE.MeshBasicMaterial({ color: 0xffc46b }));
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffc46b, toneMapped: false });
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.2), glowMat);
   glow.position.set(0, 3.2, 4.55);
-  lodge.add(walls, roof, glow);
+  const side = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.8), glowMat);
+  side.position.set(6.05, 3.4, 0);
+  side.rotation.y = Math.PI / 2;
+  const chimney = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3, 1.2), new THREE.MeshStandardMaterial({ color: 0x6b6f7a, flatShading: true }));
+  chimney.position.set(-2.5, 9.5, -1);
+  lodge.add(walls, roof, glow, side, chimney);
   lodge.position.set(lodgeX, height(lodgeX, lodgeD) - 0.5, -lodgeD);
   lodge.rotation.y = -0.6;
   scene.add(lodge);
@@ -211,7 +309,7 @@ function buildScene(renderer) {
     rider.add(mesh);
     return mesh;
   };
-  add(new THREE.BoxGeometry(0.75, 0.12, 2.8), mat(ACCENT), 0, 0.08, 0);
+  add(new THREE.CapsuleGeometry(0.36, 2.2, 2, 8).rotateX(Math.PI / 2).scale(1, 0.3, 1), mat(ACCENT), 0, 0.08, 0);
   const pants = mat(0x1d2b3a);
   add(new THREE.CylinderGeometry(0.17, 0.17, 1.1, 8), pants, 0, 0.7, -0.45).rotation.x = -0.25;
   add(new THREE.CylinderGeometry(0.17, 0.17, 1.1, 8), pants, 0, 0.7, 0.45).rotation.x = 0.25;
@@ -222,14 +320,51 @@ function buildScene(renderer) {
   armL.rotation.x = -1.2;
   armR.rotation.x = 1.2;
   add(new THREE.SphereGeometry(0.3, 12, 10), mat(0xf1c8a6), 0, 2.45, 0);
-  add(new THREE.SphereGeometry(0.34, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xffffff), 0, 2.5, 0);
-  add(new THREE.BoxGeometry(0.12, 0.14, 0.42), mat(ACCENT), 0.27, 2.47, 0);
+  add(new THREE.SphereGeometry(0.34, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xffd166), 0, 2.5, 0);
+  add(new THREE.SphereGeometry(0.11, 8, 6), mat(0xffffff), 0, 2.86, 0);
+  add(new THREE.BoxGeometry(0.14, 0.16, 0.5), new THREE.MeshStandardMaterial({ color: 0xffb02e, metalness: 0.6, roughness: 0.2 }), 0.27, 2.47, 0);
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(1.4, 20).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0x3b5470, transparent: true, opacity: 0.22, depthWrite: false })
+    new THREE.MeshBasicMaterial({ color: 0x3b5470, transparent: true, opacity: 0.25, depthWrite: false })
   );
   rider.scale.setScalar(1.35);
   scene.add(rider, shadow);
+
+  // Carved track left in the snow behind the board
+  const TRAIL = 160;
+  const trailPts = [];
+  const trailPos = new Float32Array(TRAIL * 2 * 3);
+  const trailIdx = [];
+  for (let i = 0; i < TRAIL - 1; i++) {
+    const a = i * 2;
+    trailIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+  const trailGeo = new THREE.BufferGeometry();
+  trailGeo.setAttribute("position", new THREE.BufferAttribute(trailPos, 3));
+  trailGeo.setIndex(trailIdx);
+  trailGeo.setDrawRange(0, 0);
+  const trail = new THREE.Mesh(
+    trailGeo,
+    new THREE.MeshBasicMaterial({ color: 0xb9cbe6, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide })
+  );
+  trail.frustumCulled = false;
+  scene.add(trail);
+  const updateTrail = () => {
+    for (let i = 0; i < trailPts.length; i++) {
+      const p = trailPts[i];
+      const n = trailPts[Math.min(i + 1, trailPts.length - 1)];
+      const q = trailPts[Math.max(i - 1, 0)];
+      let dx = n.x - q.x;
+      let dz = n.z - q.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const w = 0.32 * (i / trailPts.length); // narrows to nothing at the far end
+      dx = (-dz / len) * w;
+      dz = ((n.x - q.x) / len) * w;
+      trailPos.set([p.x + dx, p.y, p.z + dz, p.x - dx, p.y, p.z - dz], i * 6);
+    }
+    trailGeo.attributes.position.needsUpdate = true;
+    trailGeo.setDrawRange(0, Math.max(0, trailPts.length - 1) * 6);
+  };
 
   // Falling snow, kept in a box around the camera
   const FLAKES = reduceMotion ? 0 : isSmall ? 900 : 1800;
@@ -315,7 +450,6 @@ function buildScene(renderer) {
 
   // Scroll position -> distance down the run. Gates sit where their section is centered.
   let stopT = [];
-  const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
   const distAt = (t) => START + t * (END - START);
   const placeGates = () => {
     stopT = stops.map((s) => THREE.MathUtils.clamp((s.offsetTop + s.offsetHeight / 2 - innerHeight / 2) / maxScroll(), 0, 1));
@@ -352,8 +486,10 @@ function buildScene(renderer) {
   let t = scrollY / maxScroll();
   let first = true;
   let prevD = distAt(t);
+  let trailMax = prevD;
   const clock = new THREE.Clock();
 
+  await renderer.compileAsync(scene, camera);
   renderer.setAnimationLoop(() => {
     const dt = Math.min(clock.getDelta(), 0.05);
     const target = scrollY / maxScroll();
@@ -374,6 +510,16 @@ function buildScene(renderer) {
     rider.rotateZ(THREE.MathUtils.clamp(-curve * 0.9 - carve * 0.08, -0.6, 0.6));
     rider.rotateX(-Math.atan(SLOPE) * 0.8);
     shadow.position.set(here.x, here.y + 0.05, here.z);
+
+    // Track: add a point every half metre going down; riding back up wipes it
+    if (d < trailMax - 3) trailPts.length = 0;
+    trailMax = trailPts.length ? Math.max(trailMax, d) : d;
+    const last = trailPts[trailPts.length - 1];
+    if (!last || Math.hypot(here.x - last.x, here.z - last.z) > 0.5) {
+      trailPts.push(here.clone().setY(here.y + 0.12));
+      if (trailPts.length > TRAIL) trailPts.shift();
+      updateTrail();
+    }
 
     // Stars: spin, bob, and get caught when the rider passes close enough
     const lo = Math.min(prevD, d) - 1;
@@ -426,6 +572,7 @@ function buildScene(renderer) {
     }
     camera.position.lerp(camTarget, Math.min(1, dt * 5));
     camera.lookAt(lookTarget);
+    sky.position.copy(camera.position);
 
     if (FLAKES) {
       flakes.position.copy(camera.position);
@@ -442,6 +589,6 @@ function buildScene(renderer) {
 
     altEl.textContent = Math.round(2400 - t * 1650).toLocaleString("en-US");
     renderer.render(scene, camera);
-    document.documentElement.dataset.scene = "ready";
+    root.dataset.scene = "ready";
   });
 }

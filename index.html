@@ -8,48 +8,67 @@
       name="description"
       content="Ivan Kuper, full-stack web developer from Israel. Ride down the mountain to see my projects: React, TypeScript, Node.js, Express, MongoDB and SQL."
     />
+    <meta name="theme-color" content="#2f5f9e" />
+    <meta property="og:site_name" content="Ivan Kuper" />
     <meta property="og:title" content="Ivan Kuper | Full-Stack Developer" />
-    <meta property="og:description" content="Ride down the mountain to see my projects." />
+    <meta property="og:description" content="Ride down a 3D mountain to see my projects: React, TypeScript, Node.js, Express, MongoDB and SQL." />
     <link rel="canonical" href="https://ivankuper.github.io/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://ivankuper.github.io/" />
-    <meta property="og:image" content="https://ivankuper.github.io/assets/img/portfolio/greece.jpg" />
+    <meta property="og:image" content="https://ivankuper.github.io/assets/img/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ivan Kuper portfolio: a snowboarder at the top of a 3D mountain run" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="assets/img/logo.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="icon" href="assets/img/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
+    <link rel="preload" href="snow/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="snow/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="snow/style.css" />
     <script type="importmap">
-      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" } }
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js" } }
+    </script>
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js" crossorigin />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.core.min.js" crossorigin />
+    <noscript><style>.card { opacity: 1; transform: none; } #scene, .score, .steer { display: none; }</style></noscript>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Ivan Kuper",
+        "jobTitle": "Full-Stack Web Developer",
+        "url": "https://ivankuper.github.io/",
+        "sameAs": ["https://github.com/IvanKuper", "https://www.linkedin.com/in/ivankuper/"]
+      }
     </script>
   </head>
   <body>
     <canvas id="scene" aria-hidden="true"></canvas>
 
     <header class="topbar">
-      <a class="brand" href="#start">Ivan Kuper</a>
+      <a class="brand" href="#start"><img src="assets/img/icon.svg" alt="" width="28" height="28" />Ivan Kuper</a>
       <nav class="links" aria-label="Quick links">
         <a href="https://github.com/IvanKuper" target="_blank" rel="noopener">GitHub</a>
         <a href="https://www.linkedin.com/in/ivankuper/" target="_blank" rel="noopener">LinkedIn</a>
         <a href="classic.html">Classic site</a>
       </nav>
+      <div class="progress" aria-hidden="true"><i id="progress"></i></div>
     </header>
 
-    <aside class="hud" aria-hidden="true">
-      <div class="alt"><span id="alt">2400</span> m</div>
-      <div class="score">★ <span id="stars">0</span> / <span id="starsTotal">40</span></div>
-      <ol class="rail" id="rail"></ol>
+    <aside class="hud">
+      <div class="meter" aria-hidden="true">
+        <span class="alt"><span id="alt">2,400</span> m</span>
+        <span class="score">★ <span id="stars">0</span>/<span id="starsTotal">40</span></span>
+      </div>
+      <nav aria-label="Sections"><ol class="rail" id="rail"></ol></nav>
     </aside>
 
     <main id="run">
       <section id="start" class="stop hero" data-label="Top">
         <div class="card">
+          <p class="status"><i></i>Open to full-time roles and freelance work</p>
           <p class="eyebrow">Full-stack web developer · Israel</p>
-          <h1>Ride down the mountain<br />and see what I build.</h1>
+          <h1>Ride down the mountain and see <em>what I build.</em></h1>
           <p>
             I'm Ivan. I build web apps end to end: React and TypeScript in the browser, Node.js and
             Express on the server, MongoDB or SQL underneath. Scroll to start the run.
@@ -79,7 +98,7 @@
         <div class="card">
           <p class="eyebrow">Checkpoint 2 · Main project</p>
           <h2>Greece Business Platform</h2>
-          <img src="assets/img/portfolio/greece.jpg" alt="Greece marketing site home page in Hebrew" loading="lazy" width="960" height="532" />
+          <img src="snow/img/greece.webp" alt="Greece marketing site home page in Hebrew" loading="lazy" width="960" height="532" />
           <p>
             Marketing site plus a CRM workspace for a staffing and maintenance company: leads,
             quotes, reports, three languages, light and dark themes.
@@ -99,7 +118,7 @@
         <div class="card">
           <p class="eyebrow">Checkpoint 3 · Main project</p>
           <h2>StoRM sports store</h2>
-          <img src="assets/img/portfolio/storm.jpg" alt="StoRM store home page with a product carousel" loading="lazy" width="960" height="532" />
+          <img src="snow/img/storm.webp" alt="StoRM store home page with a product carousel" loading="lazy" width="960" height="532" />
           <p>
             A full online store: product catalog, search, cart, PayPal checkout and admin pages for
             products, orders and users.
@@ -120,7 +139,7 @@
         <div class="card">
           <p class="eyebrow">Checkpoint 4 · Main project</p>
           <h2>BiziK business cards</h2>
-          <img src="assets/img/portfolio/bizik.JPG" alt="BiziK app showing digital business cards" loading="lazy" width="960" height="532" />
+          <img src="snow/img/bizik.webp" alt="BiziK home page with a sample digital business card" loading="lazy" width="960" height="533" />
           <p>
             Create, edit and share digital business cards. Business users manage their own cards;
             visitors search them, call in one tap or scan a QR code.
@@ -140,12 +159,12 @@
           <p class="eyebrow">Checkpoint 5 · Side runs</p>
           <h2>More projects you can open right now</h2>
           <ul class="grid">
-            <li><a href="https://blackjack-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="assets/img/portfolio/blackjack.JPG" alt="" loading="lazy" /><b>Blackjack</b><span>Card game, plain JavaScript</span></a></li>
-            <li><a href="https://imdb-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="assets/img/portfolio/imdb.JPG" alt="" loading="lazy" /><b>TV Show Search</b><span>Live search with the TVmaze API</span></a></li>
-            <li><a href="https://mardi-gras-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="assets/img/portfolio/mardi.JPG" alt="" loading="lazy" /><b>Mardi Gras</b><span>Six-page site with a quiz</span></a></li>
-            <li><a href="https://sushilovers.netlify.app/" target="_blank" rel="noopener"><img src="assets/img/portfolio/sushi%20lovers.JPG" alt="" loading="lazy" /><b>Sushi Lovers</b><span>Restaurant site with ordering</span></a></li>
-            <li><a href="https://snake-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="assets/img/portfolio/snake.JPG" alt="" loading="lazy" /><b>Snake</b><span>Classic game</span></a></li>
-            <li><a href="https://tictactoe-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="assets/img/portfolio/tictactoe.JPG" alt="" loading="lazy" /><b>Tic Tac Toe</b><span>Classic game</span></a></li>
+            <li><a href="https://blackjack-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="snow/img/blackjack.webp" alt="" width="480" height="235" loading="lazy" /><b>Blackjack</b><span>Card game, plain JavaScript</span></a></li>
+            <li><a href="https://imdb-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="snow/img/imdb.webp" alt="" width="480" height="300" loading="lazy" /><b>TV Show Search</b><span>Live search with the TVmaze API</span></a></li>
+            <li><a href="https://mardi-gras-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="snow/img/mardi.webp" alt="" width="480" height="237" loading="lazy" /><b>Mardi Gras</b><span>Six-page site with a quiz</span></a></li>
+            <li><a href="https://sushilovers.netlify.app/" target="_blank" rel="noopener"><img src="snow/img/sushi-lovers.webp" alt="" width="480" height="236" loading="lazy" /><b>Sushi Lovers</b><span>Restaurant site with ordering</span></a></li>
+            <li><a href="https://snake-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="snow/img/snake.webp" alt="" width="480" height="234" loading="lazy" /><b>Snake</b><span>Classic game</span></a></li>
+            <li><a href="https://tictactoe-by-ivan-kuper.netlify.app/" target="_blank" rel="noopener"><img src="snow/img/tictactoe.webp" alt="" width="480" height="234" loading="lazy" /><b>Tic Tac Toe</b><span>Classic game</span></a></li>
           </ul>
         </div>
       </section>
@@ -160,6 +179,7 @@
           <a class="btn ghost" href="https://github.com/IvanKuper" target="_blank" rel="noopener">GitHub</a>
           <p class="small" id="haul" hidden></p>
           <p class="small"><a href="#start" id="again">Ride again ↑</a></p>
+          <p class="foot">© 2026 Ivan Kuper · Built with three.js</p>
         </div>
       </section>
     </main>
