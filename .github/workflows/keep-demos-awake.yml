@@ -1,0 +1,24 @@
+name: Keep demo servers awake
+
+# Free Render services sleep after 15 idle minutes and take about a minute to wake,
+# so a visitor from the portfolio sees a stuck page. The 750 free hours a month are shared
+# by all three services, so they are kept awake only in Israeli business hours
+# (Sun-Thu, about 08:00-17:00): ~600 hours a month instead of 2,200.
+# shortcut: GitHub pauses scheduled jobs after 60 days without commits in this repo; re-enable it in the Actions tab if that happens.
+on:
+  schedule:
+    - cron: "*/10 6-14 * * 0-4"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call each demo server
+        run: |
+          status=0
+          for url in https://storm-shop.onrender.com/ https://bizik-api.onrender.com/api/health https://greece-k88x.onrender.com/api/health; do
+            curl -fsS -o /dev/null --max-time 120 "$url" && echo "ok $url" || { echo "no answer $url"; status=1; }
+          done
+          exit $status
