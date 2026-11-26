@@ -260,7 +260,7 @@ h6 {
   min-height: 100vh;
   background:
     linear-gradient(135deg, rgba(2, 6, 23, 0.88), rgba(30, 41, 59, 0.72)),
-    url("../img/bgd.jpg") top center;
+    url("../img/bgd.webp") top center;
   background-size: cover;
   position: relative;
 }
@@ -313,10 +313,17 @@ h6 {
 }
 
 #hero p {
+  min-height: 1.6em;
   color: #e2e8f0;
   margin-bottom: 30px;
   font-size: clamp(1.1rem, 2.2vw, 1.6rem);
   font-family: "Poppins", sans-serif;
+}
+
+@media (max-width: 768px) {
+  #hero p {
+    min-height: 4.6em;
+  }
 }
 
 #hero p span {
@@ -526,38 +533,33 @@ section {
 /*--------------------------------------------------------------
 # Akills
 --------------------------------------------------------------*/
-.skills .progress {
-  height: 60px;
-  display: block;
-  background: none;
-  border-radius: 0;
+.skills .skill-group {
+  margin-bottom: 24px;
 }
 
-.skills .progress .skill {
-  padding: 0;
-  margin: 0 0 6px 0;
-  text-transform: uppercase;
-  display: block;
-  font-weight: 600;
-  font-family: "Poppins", sans-serif;
+.skills .skill-group h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
   color: #050d18;
 }
 
-.skills .progress .skill .val {
-  float: right;
-  font-style: normal;
+.skills .skill-group ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.skills .progress-bar-wrap {
-  background: #dce8f8;
-  height: 10px;
-}
-
-.skills .progress-bar {
-  width: 1px;
-  height: 10px;
-  transition: 0.9s;
-  background-color: #149ddd;
+.skills .skill-group li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #dce8f8;
+  font-size: 14px;
+  color: #173b6c;
 }
 
 /*--------------------------------------------------------------
@@ -981,7 +983,7 @@ section {
   transition: all 0.3s ease-in-out;
 }
 
-.contact .info h4 {
+.contact .info h3 {
   padding: 0 0 0 60px;
   font-size: 22px;
   font-weight: 600;
@@ -1234,8 +1236,11 @@ section {
 }
 
 .lan-logos {
-  width: 100px;
-  padding-top: 2rem;
+  width: 76px;
+  height: auto;
+  padding: 0;
+  margin: 2rem 12px 0;
+  align-self: flex-start;
 }
 /* ===== Scrollbar CSS ===== */
 * {
