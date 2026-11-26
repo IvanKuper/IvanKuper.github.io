@@ -34,27 +34,24 @@
     <link href="assets/img/logo.png" rel="apple-touch-icon" />
 
     <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,700|Raleway:300,400,500,600,700|Poppins:300,400,500,600,700&display=swap"
       rel="stylesheet"
     />
 
     <!-- Vendor CSS Files -->
-    <link href="assets/vendor/aos/aos.css" rel="stylesheet" />
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="assets/vendor/aos/aos.css" rel="stylesheet" /></noscript>
     <link
       href="assets/vendor/bootstrap/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link
-      href="assets/vendor/bootstrap-icons/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
-    <link
-      href="assets/vendor/glightbox/css/glightbox.min.css"
-      rel="stylesheet"
-    />
-    <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet" />
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" /></noscript>
+    <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" /></noscript>
 
     <!-- Template Main CSS File -->
     <link href="assets/css/style.css" rel="stylesheet" />
@@ -72,6 +69,8 @@
         <div class="profile">
           <img
             src="assets/img/Profile.jpg"
+            width="800"
+            height="800"
             alt=""
             class="img-fluid rounded-circle"
           />
@@ -216,6 +215,9 @@
             <div class="col-lg-4" data-aos="fade-right">
               <img
                 src="assets/img/Profile.jpg"
+                width="800"
+                height="800"
+                loading="lazy"
                 class="img-fluid"
                 alt="Portrait of Ivan Kuper"
               />
@@ -275,62 +277,98 @@
                 <div class="row">
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/javascript.png"
                     alt="Javascript"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/html5.png"
                     alt="Html5"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/css3.png"
                     alt="CSS3"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/node.png"
                     alt="Node.js"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/AngularJS-Shield.svg"
                     alt="Angular.js"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/react.png"
                     alt="React.js"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/typescript.png"
                     alt="Typecript"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/Mongo.png"
                     alt="MongoDB"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/firebase.png"
                     alt="Firebase"
                   />
 
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/bootstrap_plain_wordmark_logo_icon_146620.png"
                     alt="Bootstrap"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/jquery.gif"
                     alt="Jquery"
                   />
                   <img
                     class="lan-logos"
+                    width="100"
+                    height="100"
+                    loading="lazy"
                     src="./assets/img/Languages/sql.png"
                     alt="SQL"
                   />
@@ -661,7 +699,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-web">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/greece.jpg"
+                  src="snow/img/greece.webp"
+                  width="960"
+                  height="532"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="Greece business platform"
                 />
@@ -686,7 +728,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-web">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/storm.jpg"
+                  src="snow/img/storm.webp"
+                  width="960"
+                  height="532"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="StoRM sports store"
                 />
@@ -711,7 +757,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-web">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/bizik.JPG"
+                  src="snow/img/bizik.webp"
+                  width="960"
+                  height="533"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="BiziK business cards app"
                 />
@@ -732,7 +782,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-web">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/mardi.JPG"
+                  src="snow/img/mardi.webp"
+                  width="480"
+                  height="237"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="Mardi Gras landing page"
                 />
@@ -757,7 +811,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-web">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/sushi lovers.JPG"
+                  src="snow/img/sushi-lovers.webp"
+                  width="480"
+                  height="236"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="Sushi Lovers restaurant site"
                 />
@@ -775,7 +833,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-app">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/snake.JPG"
+                  src="snow/img/snake.webp"
+                  width="480"
+                  height="234"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="Snake game"
                 />
@@ -801,7 +863,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-app">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/imdb.JPG"
+                  src="snow/img/imdb.webp"
+                  width="480"
+                  height="300"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="TV Show Search app"
                 />
@@ -822,7 +888,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-app">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/tictactoe.JPG"
+                  src="snow/img/tictactoe.webp"
+                  width="480"
+                  height="234"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="Tic Tac Toe game"
                 />
@@ -843,7 +913,11 @@
             <div class="col-lg-4 col-md-6 portfolio-item filter-app">
               <div class="portfolio-wrap">
                 <img
-                  src="assets/img/portfolio/blackjack.JPG"
+                  src="snow/img/blackjack.webp"
+                  width="480"
+                  height="235"
+                  loading="lazy"
+                  decoding="async"
                   class="img-fluid"
                   alt="Blackjack game"
                 />
@@ -879,7 +953,7 @@
           <div class="row">
             <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up">
               <div class="icon"><i class="bi bi-briefcase"></i></div>
-              <h4 class="title">Turnkey web app development</h4>
+              <h3 class="title">Turnkey web app development</h3>
               <p class="description">
                 Complete web apps from idea to launch: design, front end, server, database and hosting.
               </p>
@@ -890,7 +964,7 @@
               data-aos-delay="100"
             >
               <div class="icon"><i class="bi bi-card-checklist"></i></div>
-              <h4 class="title">CMS web development</h4>
+              <h3 class="title">CMS web development</h3>
               <p class="description">
                 Sites you can update yourself, with WordPress or a simple admin panel built for your content.
               </p>
@@ -901,9 +975,9 @@
               data-aos-delay="200"
             >
               <div class="icon"><i class="bi bi-bar-chart"></i></div>
-              <h4 class="title">Cloud-based web development</h4>
+              <h3 class="title">Cloud-based web development</h3>
               <p class="description">
-                Deployment on cloud platforms such as Netlify and Railway, with managed databases and automatic builds from GitHub.
+                Deployment on cloud platforms such as Netlify, Render and GitHub Pages, with managed databases and automatic builds from GitHub.
               </p>
             </div>
             <div
@@ -912,7 +986,7 @@
               data-aos-delay="300"
             >
               <div class="icon"><i class="bi bi-binoculars"></i></div>
-              <h4 class="title">Back-end development</h4>
+              <h3 class="title">Back-end development</h3>
               <p class="description">
                 REST APIs with Node.js and Express, MongoDB or SQL databases, secure login and server-side validation.
               </p>
@@ -923,7 +997,7 @@
               data-aos-delay="400"
             >
               <div class="icon"><i class="bi bi-brightness-high"></i></div>
-              <h4 class="title">Front-end development</h4>
+              <h3 class="title">Front-end development</h3>
               <p class="description">
                 Responsive, accessible interfaces in React and TypeScript that work well on phones and desktops.
               </p>
@@ -934,7 +1008,7 @@
               data-aos-delay="500"
             >
               <div class="icon"><i class="bi bi-calendar4-week"></i></div>
-              <h4 class="title">Web design and redesign</h4>
+              <h3 class="title">Web design and redesign</h3>
               <p class="description">
                 A fresh, modern look for an existing site, keeping your content and making it faster.
               </p>
@@ -952,8 +1026,7 @@
           <div class="section-title">
             <h2>Contact</h2>
             <p>
-              If you wanna get in touch, talk to me about a project
-              collaboration or just say hi.
+              Have a project in mind or a role to fill? Send me a message and I will get back to you.
             </p>
           </div>
 
@@ -962,13 +1035,13 @@
               <div class="info">
                 <div class="address">
                   <i class="bi bi-geo-alt"></i>
-                  <h4>Location</h4>
+                  <h3>Location</h3>
                   <p>Nahariya, Israel.</p>
                 </div>
 
                 <div class="email">
                   <i class="bi bi-envelope"></i>
-                  <h4>Email:</h4>
+                  <h3>Email:</h3>
                   <p>
                     <a href="mailto:IvanKuper7@gmail.com"
                       >IvanKuper7@gmail.com</a
@@ -978,7 +1051,7 @@
 
                 <div class="phone">
                   <i class="bi bi-phone"></i>
-                  <h4>Call:</h4>
+                  <h3>Call:</h3>
                   <p><a href="tel:0542017607">0542017607</a></p>
                 </div>
 
@@ -1070,14 +1143,12 @@
     ></a>
 
     <!-- Vendor JS Files -->
-    <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
-    <script src="assets/vendor/aos/aos.js"></script>
-    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-    <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-    <script src="assets/vendor/typed.js/typed.min.js"></script>
-    <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+    <script defer src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+    <script defer src="assets/vendor/aos/aos.js"></script>
+    <script defer src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script defer src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script defer src="assets/vendor/typed.js/typed.min.js"></script>
+    <script defer src="assets/vendor/waypoints/noframework.waypoints.js"></script>
     <script>
       // No backend: open the visitor's mail app with the message filled in.
       document
@@ -1096,6 +1167,6 @@
     </script>
 
     <!-- Template Main JS File -->
-    <script src="assets/js/main.js"></script>
+    <script defer src="assets/js/main.js"></script>
   </body>
 </html>

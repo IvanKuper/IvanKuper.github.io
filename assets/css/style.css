@@ -260,7 +260,7 @@ h6 {
   min-height: 100vh;
   background:
     linear-gradient(135deg, rgba(2, 6, 23, 0.88), rgba(30, 41, 59, 0.72)),
-    url("../img/bgd.jpg") top center;
+    url("../img/bgd.webp") top center;
   background-size: cover;
   position: relative;
 }
@@ -313,10 +313,17 @@ h6 {
 }
 
 #hero p {
+  min-height: 1.6em;
   color: #e2e8f0;
   margin-bottom: 30px;
   font-size: clamp(1.1rem, 2.2vw, 1.6rem);
   font-family: "Poppins", sans-serif;
+}
+
+@media (max-width: 768px) {
+  #hero p {
+    min-height: 4.6em;
+  }
 }
 
 #hero p span {
@@ -981,7 +988,7 @@ section {
   transition: all 0.3s ease-in-out;
 }
 
-.contact .info h4 {
+.contact .info h3 {
   padding: 0 0 0 60px;
   font-size: 22px;
   font-weight: 600;
@@ -1234,8 +1241,11 @@ section {
 }
 
 .lan-logos {
-  width: 100px;
-  padding-top: 2rem;
+  width: 76px;
+  height: auto;
+  padding: 0;
+  margin: 2rem 12px 0;
+  align-self: flex-start;
 }
 /* ===== Scrollbar CSS ===== */
 * {
